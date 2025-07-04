@@ -4,15 +4,22 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Cloudinary\Configuration\Configuration;
-
-class AppServiceProvider extends ServiceProvider
+class CloudinaryServiceProvider extends ServiceProvider
 {
     /**
-     * Register any application services.
+     * Register services.
      */
     public function register(): void
     {
-               Configuration::instance([
+        //
+    }
+
+    /**
+     * Bootstrap services.
+     */
+    public function boot(): void
+    {
+        Configuration::instance([
             'cloud' => [
                 'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
                 'api_key'    => env('CLOUDINARY_API_KEY'),
@@ -22,13 +29,5 @@ class AppServiceProvider extends ServiceProvider
                 'secure' => true
             ]
         ]);
-    }
-
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        //
     }
 }

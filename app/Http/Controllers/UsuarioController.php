@@ -6,6 +6,7 @@ use App\Models\Usuario;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\UsuarioService;
+use Cloudinary\Cloudinary;
 
 class UsuarioController extends Controller
 {
@@ -31,9 +32,15 @@ class UsuarioController extends Controller
             'bairro' => 'required|string|max:255',
             'estado' => 'required|string|max:255',
             'biografia' => 'nullable|string',
-            'foto_perfil' => 'nullable|string', 
+            'foto_perfil' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
+        if ($request->hasFile('foto_perfil')) {
+            $cloudinary = new Cloudinary();
+            $uploadedFileUrl = $cloudinary->uploadApi()->upload($request->file('foto_perfil')->getRealPath());
+            $dados['foto_perfil'] = $uploadedFileUrl['secure_url']; // ← CORREÇÃO AQUI
+        }
+        
         return response()->json($this->service->criar($dados), 201);
     }
 
@@ -57,8 +64,14 @@ class UsuarioController extends Controller
                 'bairro' => 'sometimes|required|string|max:255',
                 'estado' => 'sometimes|required|string|max:255',
                 'biografia' => 'nullable|string',
-                'foto_perfil' => 'nullable|string',
+                'foto_perfil' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             ]);
+
+ if ($request->hasFile('foto_perfil')) {
+            $cloudinary = new Cloudinary();
+            $uploadedFileUrl = $cloudinary->uploadApi()->upload($request->file('foto_perfil')->getRealPath());
+            $usuarioRequest['foto_perfil'] = $uploadedFileUrl['secure_url']; // ← CORREÇÃO AQUI
+        }
 
             return response()->json([$this->service->atualizar($id, $usuarioRequest)]);
     }
