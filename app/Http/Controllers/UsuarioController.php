@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Usuario;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\UsuarioService;
@@ -10,7 +9,9 @@ use Cloudinary\Cloudinary;
 
 class UsuarioController extends Controller
 {
-    public function __construct(protected UsuarioService $service) {}
+    public function __construct(protected UsuarioService $service)
+    {
+    }
 
     /**
      * Display a listing of the resource.
@@ -25,22 +26,15 @@ class UsuarioController extends Controller
      */
     public function store(Request $request)
     {
-            $dados = $request->validate([
+        $dados = $request->validate([
             'nome_completo' => 'required|string|max:255',
             'idade' => 'required|integer|min:0',
             'rua' => 'required|string|max:255',
             'bairro' => 'required|string|max:255',
             'estado' => 'required|string|max:255',
             'biografia' => 'nullable|string',
-            'foto_perfil' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
-        if ($request->hasFile('foto_perfil')) {
-            $cloudinary = new Cloudinary();
-            $uploadedFileUrl = $cloudinary->uploadApi()->upload($request->file('foto_perfil')->getRealPath());
-            $dados['foto_perfil'] = $uploadedFileUrl['secure_url']; // ← CORREÇÃO AQUI
-        }
-        
         return response()->json($this->service->criar($dados), 201);
     }
 
@@ -57,23 +51,32 @@ class UsuarioController extends Controller
      */
     public function update(Request $request, $id)
     {
-         $usuarioRequest = $request->validate([
-                'nome_completo' => 'sometimes|required|string|max:255',
-                'idade' => 'sometimes|required|integer|min:0',
-                'rua' => 'sometimes|required|string|max:255',
-                'bairro' => 'sometimes|required|string|max:255',
-                'estado' => 'sometimes|required|string|max:255',
-                'biografia' => 'nullable|string',
-                'foto_perfil' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            ]);
+        $validatedData = $request->validate([
+            'nome_completo' => 'sometimes|required|string|max:255',
+            'idade' => 'sometimes|required|integer|min:0',
+            'rua' => 'sometimes|required|string|max:255',
+            'bairro' => 'sometimes|required|string|max:255',
+            'estado' => 'sometimes|required|string|max:255',
+            'biografia' => 'nullable|string',
+        ]);
 
- if ($request->hasFile('foto_perfil')) {
-            $cloudinary = new Cloudinary();
-            $uploadedFileUrl = $cloudinary->uploadApi()->upload($request->file('foto_perfil')->getRealPath());
-            $usuarioRequest['foto_perfil'] = $uploadedFileUrl['secure_url']; // ← CORREÇÃO AQUI
-        }
+        return response()->json($this->service->atualizar($id, $validatedData));
+    }
 
-            return response()->json([$this->service->atualizar($id, $usuarioRequest)]);
+    public function atualizarFoto(Request $request, $id)
+    {
+        $request->validate([
+            'foto_perfil' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        $cloudinary = new Cloudinary();
+        $uploadedFileUrl = $cloudinary->uploadApi()->upload(
+            $request->file('foto_perfil')->getRealPath()
+        );
+
+        return response()->json(
+            $this->service->atualizar($id, ['foto_perfil' => $uploadedFileUrl['secure_url']])
+        );
     }
 
     /**

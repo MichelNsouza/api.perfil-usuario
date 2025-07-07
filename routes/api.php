@@ -11,3 +11,4 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::apiResource('usuarios', UsuarioController::class);
+Route::post('/usuarios/{id}/foto', [UsuarioController::class, 'atualizarFoto']);
