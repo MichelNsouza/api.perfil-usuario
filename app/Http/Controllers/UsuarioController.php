@@ -63,19 +63,36 @@ class UsuarioController extends Controller
         return response()->json($this->service->atualizar($id, $validatedData));
     }
 
+    //versão com cloudinary
+    // public function atualizarFoto(Request $request, $id)
+    // {
+    //     $request->validate([
+    //         'foto_perfil' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+    //     ]);
+
+    //     $cloudinary = new Cloudinary();
+    //     $uploadedFileUrl = $cloudinary->uploadApi()->upload(
+    //         $request->file('foto_perfil')->getRealPath()
+    //     );
+
+    //     return response()->json(
+    //         $this->service->atualizar($id, ['foto_perfil' => $uploadedFileUrl['secure_url']])
+    //     );
+    // }
+
+    //versão local
     public function atualizarFoto(Request $request, $id)
     {
         $request->validate([
             'foto_perfil' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
-        $cloudinary = new Cloudinary();
-        $uploadedFileUrl = $cloudinary->uploadApi()->upload(
-            $request->file('foto_perfil')->getRealPath()
-        );
+        $path = $request->file('foto_perfil')->store('fotos_perfil', 'public');
+
+        $url = asset('storage/' . $path);
 
         return response()->json(
-            $this->service->atualizar($id, ['foto_perfil' => $uploadedFileUrl['secure_url']])
+            $this->service->atualizar($id, ['foto_perfil' => $url])
         );
     }
 
